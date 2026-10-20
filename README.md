@@ -1,4 +1,4 @@
-# VerdantRochesteriGEM
+# Verdant Rochester iGEM
 Farmer-friendly estimates of when fall armyworm caterpillars are most likely eating corn leaves, based on local weather and planting date. Available in English and Spanish.
 
 This tool estimates the dates when fall armyworm caterpillars are most likely feeding on corn leaves rather than the ear. Enter your city and planting date, and it shows when corn reaches each growth stage and when each caterpillar wave is likely to feed on leaves. It is a research prototype from the Rochester iGEM 2026 VERDANT team and has not been tested in real fields, so use it alongside your own understanding.
@@ -10,12 +10,12 @@ Team VERDANT, Rochester iGEM 2026
 
 VIPER predicts when fall armyworm (*Spodoptera frugiperda*) caterpillars are likely to be feeding on corn **leaves** rather than the **ear**, so VERDANT's engineered biocontrol circuit (MeSA → SABP2 → shikimate-pathway amplification → Vip3A, with a theophylline-gated kill switch) has a real-world window for when it should be active. Enter a field location and a planting date, and VIPER returns:
 
-- predicted corn growth-stage dates (VE, V6, VT, R1 — emergence, six-leaf/whorl, tasseling, silking),
+- predicted corn growth-stage dates (VE, V6, VT, R1:  emergence, six-leaf/whorl, tasseling, silking),
 - predicted fall armyworm leaf-feeding windows (Wave 1, Wave 2, ...), each flagged if it overlaps silking (meaning ear-feeding is also possible that wave),
 - a plain-language headline summarizing today's risk status and the next predicted window, and
 - a label stating whether the result used real live weather, Open-Meteo's historical archive, or demo/sample data.
 
-It exists in two forms that share the same math: a dependency-free static HTML page (`VIPER.html`, formerly `VERDANT_MAYBE_FINAL_updated3.html`) meant for growers and judges, and a Python/Streamlit prototype (`app.py`) used during development. If you change a constant in one, change it in the other — see the comment at the top of each file.
+It exists in two forms that share the same math: a dependency-free static HTML page (`index.html`, formerly `VIPER.html`) meant for growers and judges, and a Python/Streamlit prototype (`app.py`) used during development. If you change a constant in one, change it in the other — see the comment at the top of each file.
 
 ## Quick start — static HTML version (recommended)
 

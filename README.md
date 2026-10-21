@@ -1,91 +1,82 @@
-# Verdant Rochester iGEM
-Farmer-friendly estimates of when fall armyworm caterpillars are most likely eating corn leaves, based on local weather and planting date. Available in English and Spanish.
+#Verdant Rochester iGEM: Farmer-Friendly Estimates of Fall Armyworm Activity
 
-This tool estimates the dates when fall armyworm caterpillars are most likely feeding on corn leaves rather than the ear. Enter your city and planting date, and it shows when corn reaches each growth stage and when each caterpillar wave is likely to feed on leaves. It is a research prototype from the Rochester iGEM 2026 VERDANT team and has not been tested in real fields, so use it alongside your own understanding.
+This tool estimates the timeframes when fall armyworm caterpillars are most likely to be consuming the leaves of corn based on your local weather and planting dates. It's available in both Spanish and English.
 
+The model predicts when fall armyworm caterpillars (Spodoptera frugiperda) are probably feeding on leaves instead of the ear. This prototype allows users to enter their city and planting date and receive predictions on when the corn will be in different stages of growth and when there will be feeding by caterpillars on the leaves. The prototype has not been field tested, and should always be used in conjunction with previous knowledge and experience.
 
-# VIPER — Vigilant Insect Pest Emergence Radar
+#VIPER – Vigilant Insect Pest Emergence Radar
 
-Team VERDANT, Rochester iGEM 2026
+#VERDANT Team Rochester iGEM 2026
 
-VIPER predicts when fall armyworm (*Spodoptera frugiperda*) caterpillars are likely to be feeding on corn **leaves** rather than the **ear**, so VERDANT's engineered biocontrol circuit (MeSA → SABP2 → shikimate-pathway amplification → Vip3A, with a theophylline-gated kill switch) has a real-world window for when it should be active. Enter a field location and a planting date, and VIPER returns:
+The unique advantage of VIPER is its ability to forecast when the fall armyworm caterpillar will be feeding on the corn leaf instead of the corn ear, creating an operational window for the VERDANT engineered biocontrol circuit (MeSA SABP2 shikimate-pathway amplification Vip3A with a theophylline-gated kill switch). Users provide a field location and planting date, and VIPER will generate:
+- (Predicted date for corn stages of growth: VE, V6, VT, R1; emergence, six-leaf/whorl, tasseling, silking).
+- Forecast windows for fall armyworm leaf feeding (Wave 1, Wave 2, etc.), each of which was flagged if it overlapped with a silking period, which potentially meant ear feeding was likely.
+- Plain-language summary of the current risk status, and the next predicted window for feeding.
+- A hint if the results rely on live weather, Open-Meteo's historical database or demo/sample data.
 
-- predicted corn growth-stage dates (VE, V6, VT, R1:  emergence, six-leaf/whorl, tasseling, silking),
-- predicted fall armyworm leaf-feeding windows (Wave 1, Wave 2, ...), each flagged if it overlaps silking (meaning ear-feeding is also possible that wave),
-- a plain-language headline summarizing today's risk status and the next predicted window, and
-- a label stating whether the result used real live weather, Open-Meteo's historical archive, or demo/sample data.
+This tool exists in two variations using the same equation, a standalone static html page (index.html, formerly VIPER.html) for use by growers and evaluators, and a python/streamlit prototype (app.py) for use during development. Changes to constants in one version should be duplicated in the other – as indicated at the top of each file.
 
-It exists in two forms that share the same math: a dependency-free static HTML page (`index.html`, formerly `VIPER.html`) meant for growers and judges, and a Python/Streamlit prototype (`app.py`) used during development. If you change a constant in one, change it in the other — see the comment at the top of each file.
+Quick Start - Static HTML Version (Recommended)
+No installation is required.
 
-## Quick start — static HTML version (recommended)
+1. Clone or download the repository.
+2. Open VIPER.html in your browser (e.g. Chrome, Edge, Safari, Firefox).
+3. Choose "Use my location" to get weather updates right now (internet required) or "Try sample weather" to see how it works offline.
+4. Provide the planting date and if relevant, the date you first detected fall armyworm activity. Click to see predictions.
 
-No install needed.
+This instance is maintained separately, entirely without a server, build process, or hosted platform. The Principal Investigator on this project has asked to keep it as source code on Github, so all growers/assessors are operating their own instance.
 
-1. Clone or download this repository.
-2. Open `VIPER.html` directly in any modern browser (Chrome, Edge, Safari, or Firefox).
-3. Pick "Use my location" for real weather (needs internet) or "Try sample weather" for a fully offline demo.
-4. Enter a planting date and, if known, the date you first saw signs of fall armyworm. Submit to see your predictions.
+Quick Start - Python / Streamlit Prototype
 
-That's it — there is no server, build step, or hosted version. The team's PI asked that this stay as source code in GitHub rather than a live website, so every copy a grower or judge runs is their own.
+This version is used for development, and to check the output against the static version; not needed for using the tool.
 
-## Quick start — Python / Streamlit prototype
+1. Execute pip install -r requirements.txt.
+2. Run streamlit run app.py.
+3. This generates a browser tab that is accessible at http://localhost:8501 with inputs and outputs similar to the static version.
 
-Used for development and cross-checking against the static version; not required to use the tool.
+Prerequisites Python 3.9+ and the packages from requirements.txt (streamlit, pandas, requests, matplotlib). Not needed for the static HTML version.
 
-```bash
-pip install -r requirements.txt
-streamlit run app.py
-```
+How it Works
 
-This opens a browser tab at `http://localhost:8501` with the same inputs and outputs as the static version.
+- The live lookup for historical dates will use actual daily temperature highs and lows from the Open-Meteo historical archive API (when querying for a specific date range, e.g. between 2022-01-01 and 2022-02-01). The next 16 days of weather forecast will use data from the Open-Meteo forecast API. In case of no location information or failed live lookup, the app will fallback to a smooth synthesized temperature curve (demo mode) to provide some data.
 
-Requirements: Python 3.9+, and the packages in `requirements.txt` (`streamlit`, `pandas`, `requests`, `matplotlib`). None of this is needed for the static HTML version.
+- This tool is based on a standard growing-degree-day calculation for corn with a base temperature of 10°C and a ceiling of 30°C using published thresholds for the four growth stages of corn (VE, V6, VT, R1) published by U.S. extension sources (Bayer Crop Science; University of Minnesota Extension).
 
-## How it works
+- This version uses a degree-day (base 13.51°C; 171.5 DD for eggs, 193.8 DD for larvae, and 124.7 DD for pupae per generation) model per Malekera et al. (2022). A 45/55 division is used to guess the time spent on the leaf/whorl (early instars) versus the ear (later instars); this division is tentative, as no published degree-day specific early/late instar split exists (see Limitations).
 
-1. **Weather.** For a past planting date, real daily highs/lows come from Open-Meteo's historical archive API; the next 16 days always come from its forecast API. If no location is given, or the live lookup fails, the tool falls back to a smooth synthetic temperature curve (demo mode) so there's always something to show.
-2. **Corn growth-stage model.** A standard growing-degree-day (GDD) calculation, base 10°C / ceiling 30°C, against published corn-stage thresholds (VE, V6, VT, R1), from U.S. extension references (Bayer Crop Science; University of Minnesota Extension).
-3. **Fall armyworm generation-timing model.** A degree-day model (base 13.51°C; 171.5 DD eggs + 193.8 DD larvae + 124.7 DD pupae per generation) from Malekera et al. (2022). A 45/55 split estimates how much of the larval stage is spent on leaves/whorl (early instars) versus possibly on the ear (late instars) — this split is a placeholder; no published degree-day-specific early/late split exists yet (see Limitations).
-4. **Risk-window engine.** Combines 2 and 3 into a calendar of leaf-feeding windows, flagging any window that runs past the corn's own silking date.
+- The engine combines the modeling of the corn growth stage and fall armyworm generation timings into a listing of leaf-feeding windows that are predicted to occur and any that would arrive after the corn silking date.
 
-All of the biological reasoning behind each constant is commented directly above it in the code — see `VIPER.html`'s `<script>` section (and the equivalent in `app.py`).
+All biological reasons for constants are noted right on top of the code at the <script> section of VIPER.html (the section in app.py is the same).
 
-## Limitations (also shown in the tool itself)
+Limitations (Also Shown in the Tool Itself)
 
-- Corn-stage thresholds use generic numbers, not tuned to a specific hybrid's maturity rating.
-- The 45/55 early/late-instar leaf-vs-ear split is a placeholder, not a published value — it's the single biggest thing the model still needs.
-- If no first-sighting date is entered, the tool guesses 30 days after planting; treat that as a rough starting point.
-- Predictions more than 2–3 weeks out depend on weather *forecasts*, so they get less certain the further ahead they go.
-- One fixed set of temperature thresholds is used everywhere; outside the temperate U.S. Corn Belt (where fall armyworm's biology differs — see Garcia et al. 2018; Early et al. 2018; Adan et al. 2024) treat the dates as rough estimates, not exact forecasts.
-- Software validation and wet-lab validation are two separate things right now. VIPER's predicted windows have been checked against independent public pest-activity records (Cornell's NY Sweet Corn Trap Network — see the "Software" write-up, section 4.2), but not yet against bench data on when VERDANT's actual circuit turns on. That connection is still open.
+- These use generic values and are not adjustable for hybrid maturity ratings.
+- The division of early and late-instar leaf-vs-ear at 45/55 is not a published value (early/late division is relatively arbitrary and 45/55 division is tentative) which needs to be adjusted in the model.
+- If a first-sighting date cannot be determined, the tool estimates 30 days after planting.
+- Forecasts >2-3 weeks are based on weather forecast that is naturally more uncertain the further we try to forecast it.
+- The same set of temperature thresholds is used nationwide. In the non-Corn Belt areas where fall armyworm biology may vary from that of the temperate Corn Belt (see Garcia et al. 2018, Early et al. 2018, Adan et al. 2024), dates should be interpreted as estimates rather than exact predictions.
+- These two validations currently exist separately. The predicted windows calculated by VIPER have been checked with independent public pest-activity databases (Cornell's NY Sweet Corn Trap Network -- see "Software" write-up, section 4.2) but not yet validated with lab data in regards to activation of VERDANT's circuit.
 
-## Repository contents
+Repository Contents
 
-- `VIPER.html` — the static, dependency-free version. Open it directly in a browser.
-- `app.py` — the Python/Streamlit prototype, same math as `VIPER.html`.
-- `requirements.txt` — Python dependencies for `app.py` only.
-- `README.md` — this file.
+- VIPER.html: Version that is static and does not require dependency, can be run directly from the browser.
+- App.py: The Python/Streamlit prototype the same mathematics as VIPER.html.
+- requirements.txt: Python dependencies specific to app.py.
+- README.md: This document.
 
-## Extending VIPER for a different pest or plant
+Adding a new pest or plant to VIPER
 
-The risk-window engine is deliberately generic. A future team modeling a different insect/plant pair (for example corn earworm, European corn borer, or soybean looper on a different crop, or a completely different plant-pest pair such as diamondback moth on brassicas) can reuse it by swapping in that pest's own degree-day parameters, developmental thresholds, and whatever mechanism their own circuit uses for detection — the same calendar, risk-window, and flagging logic carries over unchanged. See "Usefulness to other projects" in the Software write-up for more on this.
+Because the risk-window engine is purposely flexible, this modeling approach could be applied to future insect/plant combinations (e.g. Diamondback moth on brassicas, soybean looper, or European corn borer on corn) by appropriate replacement of degree-day ranges, developmental thresholds, and detection mechanisms with those calculated for the new circuit. As stated above, the calendar, risk-window and flagging logic still apply. See Usefulness to other projects in the Software write-up for more details.
 
-## Citations
+Citations
 
-The biological constants and regional comparisons in this tool come from:
+The biological constants used and regional comparisons made in this calculator are sourced from:
 
-- Cornell Integrated Pest Management, Cornell University College of Agriculture and Life Sciences. (n.d.). *Fall armyworm (Spodoptera frugiperda) vegetable IPM fact sheet.*
-- Malekera, M. J., Acharya, R., Mostafiz, M. M., Hwang, H.-S., Bhusal, N., & Lee, K.-Y. (2022). Temperature-dependent development models describing the effects of temperature on the development of the fall armyworm *Spodoptera frugiperda* (J. E. Smith) (Lepidoptera: Noctuidae). *Insects*, *13*(12), 1084.
-- Bayer Crop Science. (n.d.). *How to determine corn growth stages.*
-- University of Minnesota Extension. (n.d.). *Corn growth and development.*
-- Garcia, A. G., Godoy, W. A. C., Thomas, J. M. G., Nagoshi, R. N., & Meagher, R. L. (2018). Delimiting strategic zones for the development of fall armyworm (Lepidoptera: Noctuidae) on corn in the state of Florida. *Journal of Economic Entomology*, *111*(1), 120–126.
-- Early, R., Gonzalez-Moreno, P., Murphy, S. T., & Day, R. (2018). Forecasting the global extent of invasion of the cereal pest *Spodoptera frugiperda*, the fall armyworm. *NeoBiota*, *40*, 25–50.
-- Adan, M., Tonnang, H. E. Z., Kassa, C. E. F., Greve, K., Borgemeister, C., & Goergen, G. (2024). Combining temperature-dependent life table data into Insect Life Cycle Model to forecast fall armyworm *Spodoptera frugiperda* (J.E. Smith) distribution in maize agro-ecological zones in Africa. *PLoS ONE*, *19*(5), e0299154.
-- Zuefle, M., & Cornell New York State Integrated Pest Management Program. (2026, July 7). *New York sweet corn trap network report: July 7, 2026.* Cornell University.
-- Zuefle, M., & Cornell New York State Integrated Pest Management Program. (2026, September 22). *New York sweet corn trap network report: September 22, 2026.* Cornell University.
-
-Full citations with DOIs/URLs are in the "Software" wiki write-up's References section. The identification-guide photographs in `VIPER.html` are individually credited and licensed CC BY 3.0 in their captions.
-
-## Contact
-
-Team VERDANT, Rochester iGEM 2026 — uofr.igem@gmail.com
+- Cornell Integrated Pest Management, Cornell University College of Agriculture and Life Sciences. (n.d.). Fall armyworm (Spodoptera frugiperda) vegetable IPM fact sheet.
+- Malekera, M. J., Acharya, R., Mostafiz, M. M., Hwang, H.-S., Bhusal, N., & Lee, K.-Y. (2022). Temperature-dependent development models for the description of the effects of temperature on development of the fall armyworm Spodoptera frugiperda (J. E. Smith) (Lepidoptera: Noctuidae). Insects, 13(12), 1084.
+- No date. How to determine corn growth stages. Corn expert guides. Bayer Crop Science.
+- University of Minnesota Extension. (n.d.). Corn growth and development.
+- Garcia, A. G., Godoy, W. A. C., Thomas, J. M. G., Nagoshi, R. N., & Meagher, R. L. (2018). Delimiting strategic zones for the development of fall armyworm (Lepidoptera: Noctuidae) on corn in the state of Florida. Journal of Economic Entomology, 111(1), 120-126.
+- Early, R., Gonzalez-Moreno, P., Murphy, S. T., & Day, R. (2018). Predicting the global distribution of the invasive cereal pest Spodoptera frugiperda, the fall armyworm. Neo Biota, 40, 25-50.
+- Adan, M., Tonnang, H. E. Z., Kassa, C. E. F., Greve, K., Borgemeister, C. & Goergen, G. (2024). Integrating temperature-dependent life table information into Insect Life Cycle Model to predict the distribution of fall armyworm Spodoptera frugiperda (J.E. Smith) in maize agro-ecological zones in Africa. PLoS ONE 19(5): e0299154.
+- Zuefle, M., & Cornell New York State Integrated Pest Management Program. (2026, July 7).
